@@ -56,7 +56,6 @@ namespace CMU462 { namespace StaticScene {
       }
 
       return inter;
-
     }
 
     bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
@@ -79,9 +78,7 @@ namespace CMU462 { namespace StaticScene {
 	  inter = true;
 	}      
       }
-
       return inter;
-
     }
 
   }  // namespace StaticScene
