@@ -118,8 +118,10 @@ namespace CMU462 { namespace StaticScene {
 
     private:
       BVHNode* root; ///< root node of the BVH
-    };
-
+      void makeTree(BVHNode *top, size_t start, size_t range, size_t max_leaf_size,
+			    Vector3D *centroids, BBox *bboxes);
+      bool findClosestHit(const Ray& r, BVHNode *node, Intersection *i) const;
+    };    
   } // namespace StaticScene
 } // namespace CMU462
 

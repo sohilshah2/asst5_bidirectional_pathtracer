@@ -476,7 +476,8 @@ namespace CMU462 {
       // TODO:
       // construct a shadow ray and compute whether the intersected surface is
       // in shadow and accumulate reflected radiance
-      L_out = light_L * f * cos_theta;
+
+      L_out += light_L * f * cos_theta * pdf;
     }
 
     // TODO:
@@ -484,7 +485,7 @@ namespace CMU462 {
     // Note that Ray objects have a depth field now; you should use this to avoid
     // traveling down one path forever.
 
-    return L_out;
+    return L_out * scale;
   }
 
   Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
