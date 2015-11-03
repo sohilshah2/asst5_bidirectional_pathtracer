@@ -420,7 +420,7 @@ namespace CMU462 {
     log_ray_hit(r, isect.t);
 #endif
 
-    Spectrum L_out;
+    Spectrum L_out = isect.bsdf->get_emission(); // Le
 
     Vector3D hit_p = r.o + r.d * isect.t;
     Vector3D hit_n = isect.n;
@@ -474,7 +474,7 @@ namespace CMU462 {
       Spectrum f = isect.bsdf->f(w_out, w_in);
 
       // TODO:
-      // construct a shadow ray and compute whether the intersected surface is
+      // Construct a shadow ray and compute whether the intersected surface is
       // in shadow and accumulate reflected radiance
 
       L_out += light_L * f * cos_theta * pdf;
