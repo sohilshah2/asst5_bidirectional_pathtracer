@@ -37,13 +37,21 @@
 <h4>
 <a id="author-sohil-shah-sohils" class="anchor" href="#author-sohil-shah-sohils" aria-hidden="true"><span class="octicon octicon-link"></span></a>Author: Sohil Shah (sohils)</h4>
 
-<p>For this project, I would like to implement a bidirectional path tracing algorithm by extending the assignment 3 code. The main goal of this would be to render correct images with lower variance according to the same wall clock time. This should also help greatly with effects such as cuastics due to the faster convergence of the integral. </p>
+<p>For this project, I would like to implement a bidirectional path tracing algorithm by extending the assignment 3 code. The main goal of this would be to render correct images with lower variance according to the same wall clock time. This should also help greatly with effects such as caustics due to the faster convergence of the integral. </p>
 
 <h2>
 <a id="plan" class="anchor" href="#plan" aria-hidden="true"><span class="octicon octicon-link"></span></a>Plan</h2>
 
+<p>To accomplish this project, these are the things that need to be done:
+1. The pathtracer will be modified to shoot rays from both the light sources and the camera. 
+2. The rays from light sources and the camera will then be independently traced. 
+3. Endpoints from each of the two types of ray paths will be connected to compute contribution of radiance along each path.
+4. Finally, each path will be weighted according to the probability of choosing that path connection. </p>
+
 <h2>
 <a id="ideal-result" class="anchor" href="#ideal-result" aria-hidden="true"><span class="octicon octicon-link"></span></a>Ideal Result</h2>
+
+<p>A correct implementation of this project will have the following features:</p>
       </section>
     </div>
 
