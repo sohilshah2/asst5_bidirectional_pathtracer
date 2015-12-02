@@ -5,6 +5,7 @@
 #include <stack>
 #include <random>
 #include <algorithm>
+#include <assert.h>
 
 #include "CMU462/CMU462.h"
 #include "CMU462/vector3D.h"
@@ -397,33 +398,26 @@ namespace CMU462 {
     }
   }
 
-  Spectrum PathTracer::trace_ray(const Ray &r) {
+  Spectrum PathTracer::trace_ray(const Ray &r, int bounce, bool includeLe) {
 
     Intersection isect;
 
-    if (!bvh->intersect(r, &isect)) {
+    if (!bvh->intersect(r, &isect)) {  
+    
+      if (!this->envLight) return Spectrum(0,0,0);
 
-      // log ray miss
-#ifdef ENABLE_RAY_LOGGING
-      log_ray_miss(r);
-#endif
+      float pdf, dist;
+      Vector3D dir;
 
-      // TODO:
-      // If you have an environment map, return the Spectrum this ray
-      // samples from the environment map. If you don't return black.
-
-      return Spectrum(0,0,0);
+      Spectrum light = this->envLight->sample_dir(r);
+      
+      return light;
     }
 
-    // log ray hit
-#ifdef ENABLE_RAY_LOGGING
-    log_ray_hit(r, isect.t);
-#endif
-
-    Spectrum L_out = isect.bsdf->get_emission(); // Le
+    Spectrum L_out = includeLe ? isect.bsdf->get_emission() : Spectrum();
 
     Vector3D hit_p = r.o + r.d * isect.t;
-    Vector3D hit_n = isect.n;
+    Vector3D hit_n = (isect.n).unit();
 
     // make a coordinate system for a hit point
     // with N aligned with the Z direction.
@@ -437,55 +431,69 @@ namespace CMU462 {
     Vector3D w_out = w2o * (r.o - hit_p);
     w_out.normalize();
 
-    // TODO:
-    // extend the below code to compute the direct lighting for all the lights
-    // in the scene, instead of just the dummy light we provided in part 1.
-
-    //InfiniteHemisphereLight light(Spectrum(5.f, 5.f, 5.f));
-    DirectionalLight light(Spectrum(5.f, 5.f, 5.f), Vector3D(1.0, -1.0, 0.0));
-
     Vector3D dir_to_light;
     float dist_to_light;
     float pdf;
 
-    // no need to take multiple samples from a directional source
-    int num_light_samples = light.is_delta_light() ? 1 : ns_area_light;
+    for (SceneLight* light : scene->lights) {
+      Spectrum L_temp = Spectrum(0, 0, 0);
+      // no need to take multiple samples from a directional source
+      int num_light_samples = light->is_delta_light() ? 1 : ns_area_light;
 
-    // integrate light over the hemisphere about the normal
-    double scale = 1.0 / num_light_samples;
-    for (int i=0; i<num_light_samples; i++) {
+      // integrate light over the hemisphere about the normal
+      double scale = 1.0 / num_light_samples;
+      for (int i=0; i<num_light_samples; i++) {
 
-      // returns a vector 'dir_to_light' that is a direction from
-      // point hit_p to the point on the light source.  It also returns
-      // the distance from point x to this point on the light source.
-      // (pdf is the probability of randomly selecting the random
-      // sample point on the light source -- more on this in part 2)
-      Spectrum light_L = light.sample_L(hit_p, &dir_to_light, &dist_to_light, &pdf);
+	// returns a vector 'dir_to_light' that is a direction from
+	// point hit_p to the point on the light source.  It also returns
+	// the distance from point x to this point on the light source.
+	// (pdf is the probability of randomly selecting the random
+	// sample point on the light source -- more on this in part 2)
+	Spectrum light_L = light->sample_L(hit_p, &dir_to_light, &dist_to_light, &pdf);
 
-      // convert direction into coordinate space of the surface, where
-      // the surface normal is [0 0 1]
-      Vector3D w_in = w2o * dir_to_light;
+	// convert direction into coordinate space of the surface, where
+	// the surface normal is [0 0 1]
+	Vector3D w_in = w2o * dir_to_light;
 
-      // note that computing dot(n,w_in) is simple
-      // in surface coordinates since the normal is [0 0 1]
-      double cos_theta = std::max(0.0, w_in[2]);
+	// note that computing dot(n,w_in) is simple
+	// in surface coordinates since the normal is [0 0 1]
+	double cos_theta = std::max(0.0, w_in[2]);
 
-      // evaluate surface bsdf
-      Spectrum f = isect.bsdf->f(w_out, w_in);
+	// evaluate surface bsdf
+	Spectrum f = isect.bsdf->f(w_out, w_in);
 
-      // TODO:
-      // Construct a shadow ray and compute whether the intersected surface is
-      // in shadow and accumulate reflected radiance
-
-      L_out += light_L * f * cos_theta * pdf;
+	// Construct a shadow ray and compute whether the intersected surface is
+	// in shadow and accumulate reflected radiance
+	Vector3D origin = hit_p + EPS_D * dir_to_light;
+	Ray shadow = Ray(origin, dir_to_light);
+	Intersection shadow_isect;
+	shadow.max_t = dist_to_light;
+	if (!(bvh->intersect(shadow, &shadow_isect))) {
+	  L_temp += light_L * f * cos_theta * (1/pdf);
+	}
+      }
+      if (num_light_samples) L_out += L_temp * scale;
     }
 
-    // TODO:
     // compute an indirect lighting estimate using pathtracing with Monte Carlo.
     // Note that Ray objects have a depth field now; you should use this to avoid
     // traveling down one path forever.
+    if (++bounce >= max_ray_depth) return L_out;
 
-    return L_out * scale;
+    // Random direction to shoot ray in
+    Vector3D wi;    
+    Spectrum light_bounce = isect.bsdf->sample_f(w_out, &wi, &pdf);
+
+    float term_prob;
+    term_prob = (1.f - clamp(light_bounce.illum(), 0, 1)) * 0.65;
+
+    wi = (o2w * wi).unit();
+    Ray indirect_ray = Ray(hit_p + wi*EPS_D, wi);
+
+    if (((float)(std::rand()) / RAND_MAX) < term_prob) return L_out;
+    
+    return L_out + (light_bounce * trace_ray(indirect_ray, bounce, isect.bsdf->is_delta()) 
+		    * fabs(dot(wi, hit_n))) * (1 / (pdf * (1-term_prob)));
   }
 
   Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
@@ -501,14 +509,14 @@ namespace CMU462 {
     if (num_samples == 1) {
       p.x = ((double)x+0.5) / (double)sampleBuffer.w;
       p.y = ((double)y+0.5) / (double)sampleBuffer.h;
-      return trace_ray(camera->generate_ray(p.x, p.y));
+      return trace_ray(camera->generate_ray(p.x, p.y), 0, true);
     } else {
       Spectrum result = Spectrum(0,0,0);
       for (int i = 0; i < num_samples; i++) {
 	Vector2D e = this->gridSampler->get_sample();
 	p.x = ((double)x+e.x) / (double)sampleBuffer.w;
 	p.y = ((double)y+e.y) / (double)sampleBuffer.h;
-	result += trace_ray(camera->generate_ray(p.x, p.y));       
+	result += trace_ray(camera->generate_ray(p.x, p.y), 0, true);
       }
       result = result * (1 / (double)num_samples);
       return result;

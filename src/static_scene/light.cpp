@@ -34,7 +34,9 @@ InfiniteHemisphereLight::InfiniteHemisphereLight(const Spectrum& rad)
 Spectrum InfiniteHemisphereLight::sample_L(const Vector3D& p, Vector3D* wi,
                                            float* distToLight,
                                            float* pdf) const {
+
   Vector3D dir = sampler.get_sample();
+
   *wi = sampleToWorld* dir;
   *distToLight = INF_D;
   *pdf = 1.0 / (2.0 * M_PI);
@@ -49,6 +51,7 @@ PointLight::PointLight(const Spectrum& rad, const Vector3D& pos) :
 Spectrum PointLight::sample_L(const Vector3D& p, Vector3D* wi,
                              float* distToLight,
                              float* pdf) const {
+
   Vector3D d = position - p;
   *wi = d.unit();
   *distToLight = d.norm();
@@ -81,6 +84,7 @@ Spectrum AreaLight::sample_L(const Vector3D& p, Vector3D* wi,
                              float* distToLight, float* pdf) const {
 
   Vector2D sample = sampler.get_sample() - Vector2D(0.5f, 0.5f);
+
   Vector3D d = position + sample.x * dim_x + sample.y * dim_y - p;
   float cosTheta = dot(d, direction);
   float sqDist = d.norm2();

@@ -7,6 +7,8 @@
 #include <iostream>
 #include <stack>
 
+#define NUM_BINS 12
+
 using namespace std;
 
 namespace CMU462 { namespace StaticScene {
@@ -28,22 +30,13 @@ namespace CMU462 { namespace StaticScene {
 	bb.expand(primitives[i]->get_bbox());
       }
 
-      Vector3D centroids[primitives.size()];
-      BBox bboxes[primitives.size()];
-
       this->root = new BVHNode(bb, 0, primitives.size());
-      makeTree(root, 0, primitives.size(), max_leaf_size, centroids, bboxes);
+      makeTree(root, 0, primitives.size(), max_leaf_size);
     }
     
-    void BVHAccel::makeTree(BVHNode *top, size_t start, size_t range, size_t max_leaf_size,
-			    Vector3D *centroids, BBox *bboxes) {
+    void BVHAccel::makeTree(BVHNode *top, size_t start, size_t range, size_t max_leaf_size) {
 
       if (range <= max_leaf_size) return;
-
-      for (size_t i = 0; i < primitives.size(); ++i) {
-	bboxes[i] = primitives[i]->get_bbox();
-        centroids[i] = bboxes[i].centroid();
-      }
 
       // Lowest partition found
       double minCost = INF_D;
@@ -51,21 +44,27 @@ namespace CMU462 { namespace StaticScene {
       bool xSplit = false;
       bool ySplit = false;
       bool zSplit = false;
-      BBox minLeft=BBox(), minRight=BBox();
+      BBox minLeft;
+      BBox minRight;
+
+      size_t partition_offset = range / NUM_BINS + 1;
+
+      BBox left, right;
 
       // Check partition planes in x-axis
-      for (size_t i = start; i < start+range; i++) {
+      for (size_t i = start; i < start+range; i += partition_offset) {
 	double cost = 0;
-	double plane = centroids[i].x;
-	BBox left=BBox(), right=BBox();
+	double plane = primitives[i]->get_bbox().centroid().x;
+	left=BBox();
+	right=BBox();
 	size_t size_left=0, size_right=0;
 
 	for (size_t j = start; j < start+range; j++) {
-	  if (plane > centroids[j].x) {
-	    left.expand(bboxes[j]);
+	  if (plane > primitives[j]->get_bbox().centroid().x) {
+	    left.expand(primitives[j]->get_bbox());
 	    size_left++;
 	  } else {
-	    right.expand(bboxes[j]);
+	    right.expand(primitives[j]->get_bbox());
 	    size_right++;
 	  }
 	}
@@ -73,9 +72,8 @@ namespace CMU462 { namespace StaticScene {
 	if (size_right && size_left) {
 	  cost = size_left*left.surface_area();
 	  cost += size_right*right.surface_area();
-	  cost = cost;
 
-	  if (cost < minCost) {	   
+	  if (cost < minCost) {
 	    xSplit = true;
 	    minCost = cost;
 	    splitIdx = plane;
@@ -86,18 +84,19 @@ namespace CMU462 { namespace StaticScene {
       }
 
       // Check partition planes in y-axis
-      for (size_t i = start; i < start+range; i++) {
+      for (size_t i = start; i < start+range; i += partition_offset) {
 	double cost = 0;
-	double plane = centroids[i].y;
-	BBox left=BBox(), right=BBox();
+	double plane = primitives[i]->get_bbox().centroid().y;
+	left=BBox();
+	right=BBox();
 	size_t size_left=0, size_right=0;
 
 	for (size_t j = start; j < start+range; j++) {
-	  if (plane > centroids[j].y) {
-	    left.expand(bboxes[j]);
+	  if (plane > primitives[j]->get_bbox().centroid().y) {
+	    left.expand(primitives[j]->get_bbox());
 	    size_left++;
 	  } else {
-	    right.expand(bboxes[j]);
+	    right.expand(primitives[j]->get_bbox());
 	    size_right++;
 	  }
 	}
@@ -105,7 +104,6 @@ namespace CMU462 { namespace StaticScene {
 	if (size_right && size_left) {
 	  cost = size_left*left.surface_area();
 	  cost += size_right*right.surface_area();
-	  cost = cost;
 	
 	  if (cost < minCost) {
 	    xSplit = false;
@@ -119,18 +117,19 @@ namespace CMU462 { namespace StaticScene {
       }
 
       // Check partition planes in z-axis
-      for (size_t i = start; i < start+range; i++) {
+      for (size_t i = start; i < start+range; i += partition_offset) {
 	double cost = 0;
-	double plane = centroids[i].z;
-	BBox left=BBox(), right=BBox();
+	double plane = primitives[i]->get_bbox().centroid().z;
+	left=BBox();
+	right=BBox();
 	size_t size_left=0, size_right=0;
 
 	for (size_t j = start; j < start+range; j++) {
-	  if (plane > centroids[j].z) {
-	    left.expand(bboxes[j]);
+	  if (plane > primitives[j]->get_bbox().centroid().z) {
+	    left.expand(primitives[j]->get_bbox());
 	    size_left++;
 	  } else {
-	    right.expand(bboxes[j]);
+	    right.expand(primitives[j]->get_bbox());
 	    size_right++;
 	  }
 	}
@@ -138,7 +137,6 @@ namespace CMU462 { namespace StaticScene {
 	if (size_right && size_left) {
 	  cost = size_left*left.surface_area();
 	  cost += size_right*right.surface_area();
-	  cost = cost;
 	  
 	  if (cost < minCost) {
 	    xSplit = false;
@@ -152,6 +150,10 @@ namespace CMU462 { namespace StaticScene {
 	}
       }
 
+      if (minCost == INF_D) {
+	return;
+      }
+      
       Primitive** p = std::partition(&primitives[start], &primitives[start+range], 
 				     [xSplit, ySplit, zSplit, splitIdx](Primitive *p) -> bool { 
 				       if (xSplit) return splitIdx > p->get_bbox().centroid().x;
@@ -161,14 +163,14 @@ namespace CMU462 { namespace StaticScene {
       
       size_t mid = ((std::vector<Primitive*>::iterator)p) - primitives.begin();
       
-      BVHNode *left = new BVHNode(minLeft, start, mid - start);
-      BVHNode *right = new BVHNode(minRight, mid, range - mid + start);
+      BVHNode *l = new BVHNode(minLeft, start, mid - start);
+      BVHNode *r = new BVHNode(minRight, mid, range - mid + start);
       
-      top->l = left;
-      top->r = right;      
+      top->l = l;
+      top->r = r;      
       
-      makeTree(left, start, mid - start, max_leaf_size, centroids, bboxes);
-      makeTree(right, mid, range - mid + start, max_leaf_size, centroids, bboxes);
+      makeTree(l, start, mid - start, max_leaf_size);
+      makeTree(r, mid, range - mid + start, max_leaf_size);
     }
 
     BVHAccel::~BVHAccel() {
@@ -191,11 +193,7 @@ namespace CMU462 { namespace StaticScene {
 
       Intersection i;
       double t0=ray.min_t, t1=ray.max_t;
-      if (root->bb.intersect(ray, t0, t1)) {
-	return findClosestHit(ray, root, &i);	
-      } else {
-	return false;
-      }
+      return findClosestHit(ray, root, &i);      
     }
 
     bool BVHAccel::intersect(const Ray &ray, Intersection *i) const {
@@ -208,11 +206,7 @@ namespace CMU462 { namespace StaticScene {
       // and not the BVH aggregate itself.
       
       double t0=ray.min_t, t1=ray.max_t;
-      if (root->bb.intersect(ray, t0, t1)) {
-	return findClosestHit(ray, root, i);	
-      } else {
-	return false;
-      }
+      return findClosestHit(ray, root, i);
     }
     
     bool BVHAccel::findClosestHit(const Ray& r, BVHNode *node, Intersection *i) const {
@@ -259,7 +253,6 @@ namespace CMU462 { namespace StaticScene {
 
 	return hit_first || hit_second;
       }
-
     }
 
   }  // namespace StaticScene

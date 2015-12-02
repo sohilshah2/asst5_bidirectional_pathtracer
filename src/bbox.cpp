@@ -40,6 +40,9 @@ namespace CMU462 {
       t0 = tmin;
       t1 = tmax;
       return true;
+    } else if (tmax >= tmin && tmin < 0) {
+      t1 = tmax;
+      return true;
     } else {
       return false;
     }

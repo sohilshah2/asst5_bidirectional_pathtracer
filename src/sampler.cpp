@@ -6,11 +6,12 @@ namespace CMU462 {
 
 Vector2D UniformGridSampler2D::get_sample() const {
 
-  // TODO:
   // Implement uniform 2D grid sampler
-
-  return Vector2D(0.5,0.5);
-
+  
+  double Xi1 = (double)(std::rand()) / RAND_MAX;
+  double Xi2 = (double)(std::rand()) / RAND_MAX;
+  
+  return Vector2D(Xi1, Xi2);
 }
 
 // Uniform Hemisphere Sampler3D Implementation //
@@ -28,7 +29,6 @@ Vector3D UniformHemisphereSampler3D::get_sample() const {
   double zs = cosf(theta);
 
   return Vector3D(xs, ys, zs);
-
 }
 
 Vector3D CosineWeightedHemisphereSampler3D::get_sample() const {
