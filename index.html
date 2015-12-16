@@ -67,7 +67,21 @@ Source: <a href="https://adventuresinrendering.wordpress.com/">https://adventure
 <h2>
 <a id="potential-problems" class="anchor" href="#potential-problems" aria-hidden="true"><span class="octicon octicon-link"></span></a>Potential Problems</h2>
 
-<p>The problems anticipated here mostly lie with the calculation of the probability of choosing a path. However, there is enough research already available on the internet about the subject that this should not pose an issue. If you have any comments on parts of this project that might pose a problem or could be particularly difficult please contact me. </p>
+<p>The problems anticipated here mostly lie with the calculation of the probability of choosing a path. However, there is enough research already available on the internet about the subject that this should not pose an issue. If you have any comments on parts of this project that might pose a problem or could be particularly difficult please contact me.  </p>
+
+<h1>
+<a id="actual-results-and-implementation" class="anchor" href="#actual-results-and-implementation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Actual Results and Implementation</h1>
+
+<p>The result of this project is a fairly successful bidirectional pathtracer. This pathtracer seems to do well rendering more interesting caustic effects and results in lower variance for many scenes. Its shortcomings are higher render time for identical sample count (which is expected) and high variance when a scene has a lot of delta materials. This is likely due to some mistakes in calculating pdfs when the path contains deltas. More work would have to go into calculating these distributions to reduce variance when a scene has lots of mirrors or glass. However, the implementation does give a lot of nice results.</p>
+
+<h2>
+<a id="result-images" class="anchor" href="#result-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>Result images</h2>
+
+<h1>
+<a id="known-implementation-problems" class="anchor" href="#known-implementation-problems" aria-hidden="true"><span class="octicon octicon-link"></span></a>Known Implementation Problems</h1>
+
+<h1>
+<a id="build-instructions" class="anchor" href="#build-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build Instructions</h1>
       </section>
     </div>
 
