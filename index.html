@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html>
-
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Assignment 5: Bidirectional Pathtracer : ">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Assignment 5: Bidirectional Pathtracer</title>
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Assignment 5: Bidirectional Pathtracer by sohilshah2</title>
   </head>
 
   <body>
+    <div id="container">
+      <div class="inner">
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer">View on GitHub</a>
-
-          <h1 id="project_title">Assignment 5: Bidirectional Pathtracer</h1>
-          <h2 id="project_tagline"></h2>
-
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer/tarball/master">Download this project as a tar.gz file</a>
-            </section>
+        <header>
+          <h1>Assignment 5: Bidirectional Pathtracer</h1>
+          <h2></h2>
         </header>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/sohilshah2/asst5_bidirectional_pathtracer" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
 <a id="assignment-5-project-idea-proposal" class="anchor" href="#assignment-5-project-idea-proposal" aria-hidden="true"><span class="octicon octicon-link"></span></a>Assignment 5 Project Idea Proposal</h1>
 
 <h4>
@@ -61,7 +61,7 @@
 <p><img src="http://celarek.at/wp/wp-content/uploads/2014/06/veach_scene.jpg" alt=""><br>
 Source: <a href="http://celarek.at/2014/06/global-illumination-rendering-using-path-tracing-and-bidirectional-path-tracing">http://celarek.at/2014/06/global-illumination-rendering-using-path-tracing-and-bidirectional-path-tracing</a>  </p>
 
-<p><img src="https://adventuresinrendering.files.wordpress.com/2014/01/unidirectionalvsbidirectional-indirect-lighting-comparison.jpg" alt="">
+<p><img src="https://adventuresinrendering.files.wordpress.com/2014/01/unidirectionalvsbidirectional-indirect-lighting-comparison.jpg" alt=""><br>
 Source: <a href="https://adventuresinrendering.wordpress.com/">https://adventuresinrendering.wordpress.com/</a>  </p>
 
 <h2>
@@ -78,44 +78,48 @@ Source: <a href="https://adventuresinrendering.wordpress.com/">https://adventure
 <a id="result-images" class="anchor" href="#result-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>Result images</h2>
 
 <p><img src="https://cloud.githubusercontent.com/assets/7096456/11853754/d7695b20-a40d-11e5-989f-5299fd82b143.png" alt=""><br>
-Bidirectional: 2048 samples<br>
-<img src="https://cloud.githubusercontent.com/assets/7096456/11853767/ec73fbc4-a40d-11e5-99b4-71a4b7aad3e2.png" alt=""><br>
-Standard Pathtracing: 4096 samples<br>
-Here we can see a lower amount of noise with fewer samples. The bidirectional render finished quicker than the standard pathtracing version (about 1.3x faster). Even with fewer samples, the bidirectional render can be seen to have lower variance in areas that are hard to sample such as this shadow. </p>
+Bidirectional: 2048 samples  </p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7096456/11853767/ec73fbc4-a40d-11e5-99b4-71a4b7aad3e2.png" alt=""><br>
+Standard Pathtracing: 4096 samples  </p>
+
+<p>Here we can see a lower amount of noise with fewer samples. The bidirectional render finished quicker than the standard pathtracing version (about 1.3x faster). Even with fewer samples, the bidirectional render can be seen to have lower variance in areas that are hard to sample such as this shadow. </p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/7096456/11853753/d767ee8e-a40d-11e5-8a18-92f8d368a579.png" alt=""><br>
-Bidirectional: Much better caustic sampling<br>
-One thing we notice with the bidirectional renderer is that caustics are much more prominent. We can see effects that were not visible with standard pathtracing. See below for more examples.  </p>
+Bidirectional: Much better caustic sampling  </p>
+
+<p>One thing we notice with the bidirectional renderer is that caustics are much more prominent. We can see effects that were not visible with standard pathtracing.  </p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/7096456/11853752/d767c616-a40d-11e5-80b4-a98342a4bb85.png" alt=""><br>
-Bidirectional Caustics<br>
-<img src="https://cloud.githubusercontent.com/assets/7096456/11853769/ec78a4e4-a40d-11e5-9ea7-64aa82ea3eec.png" alt=""><br>
-Standard Pathtracing Caustics<br>
-This scene looks much better lit with bidirectional rendering.  </p>
+Bidirectional Caustics  </p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7096456/11853769/ec78a4e4-a40d-11e5-9ea7-64aa82ea3eec.png" alt=""><br>
+Standard Pathtracing Caustics  </p>
+
+<p>This scene looks much better lit with bidirectional rendering.  </p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/7096456/11853751/d767b842-a40d-11e5-9dc5-3959b8811aa8.png" alt=""><br>
-Bidirectional Caustics<br>
-<img src="https://cloud.githubusercontent.com/assets/7096456/11853768/ec77b37c-a40d-11e5-92de-e1213105b9c7.png" alt=""><br>
-Standard Pathtracing Caustics<br>
-Notice the caustic from the mirror dragon on the floor of the box. This was not visible before.  </p>
+Bidirectional Caustics  </p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/7096456/11853768/ec77b37c-a40d-11e5-92de-e1213105b9c7.png" alt=""><br>
+Standard Pathtracing Caustics  </p>
+
+<p>Notice the caustic from the mirror dragon on the floor of the box. This was not visible before.  </p>
 
 <h1>
 <a id="known-implementation-problems" class="anchor" href="#known-implementation-problems" aria-hidden="true"><span class="octicon octicon-link"></span></a>Known Implementation Problems</h1>
 
 <h1>
 <a id="build-instructions" class="anchor" href="#build-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build Instructions</h1>
-      </section>
+        </section>
+
+        <footer>
+          Assignment 5: Bidirectional Pathtracer is maintained by <a href="https://github.com/sohilshah2">sohilshah2</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
     </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Assignment 5: Bidirectional Pathtracer maintained by <a href="https://github.com/sohilshah2">sohilshah2</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
   </body>
 </html>
