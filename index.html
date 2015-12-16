@@ -112,11 +112,9 @@ Standard Pathtracing Caustics  </p>
 <p>Though I would say this project was a success, there are a couple of known issues with it. </p>
 
 <ul>
-<li>First, the integrator may be biased as the images produced are often significantly different in lighting than those of the standard pathtracer. Certain areas are light more and others are darker. It is hard to prove whether this raytracer is biased or not.<br>
-</li>
-<li>Second, although it converges in fewer samples than the standard pathtracer, rendering those samples takes much longer. It turns out that through testing, to get an image with a certain variance, the pathtracer takes about 2-3x more samples. However, the bidirectional pathtracer can render the same number of samples in about 1.5x-2x slower. Therefore, the speedup is usually not too significant.<br>
-</li>
-<li>The bidirectional pathtracer produces high variance output images when a lot of delta materials are used. This is the biggest issue I see so far. </li>
+<li><p>First, the integrator may be biased as the images produced are often significantly different in lighting than those of the standard pathtracer. Certain areas are light more and others are darker. It is hard to prove whether this raytracer is biased or not.  </p></li>
+<li><p>Second, although it converges in fewer samples than the standard pathtracer, rendering those samples takes much longer. It turns out that through testing, to get an image with a certain variance, the pathtracer takes about 2-3x more samples. However, the bidirectional pathtracer can render the same number of samples in about 1.5x-2x slower. Therefore, the speedup is usually not too significant.  </p></li>
+<li><p>The bidirectional pathtracer produces high variance output images when a lot of delta materials are used. This is the biggest issue I see so far.  </p></li>
 </ul>
 
 <p>Based on these issues, I believe the best use for my implementation of the bidirectional pathtracer would be to render caustics. Maybe combine this with some other method that works better for delta materials to make it better. I think the issue is mainly with how the probabilities were calculated when delta materials were in the path.   </p>
@@ -127,15 +125,16 @@ Standard Pathtracing Caustics  </p>
 <h1>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h1>
 
-<p>A large portion of my research was from this paper by Eric Veach: <a href="https://graphics.stanford.edu/courses/cs348b-03/papers/veach-chapter10.pdf">https://graphics.stanford.edu/courses/cs348b-03/papers/veach-chapter10.pdf</a></p>
+<p>A large portion of my research was from this paper by Eric Veach: <a href="https://graphics.stanford.edu/courses/cs348b-03/papers/veach-chapter10.pdf">https://graphics.stanford.edu/courses/cs348b-03/papers/veach-chapter10.pdf</a>  </p>
 
 <p>Also used:</p>
 
 <ul>
 <li><a href="http://www.cescg.org/CESCG98/PDornbach/">http://www.cescg.org/CESCG98/PDornbach/</a></li>
 <li>
-<a href="https://adventuresinrendering.wordpress.com/2014/01/21/bidirectional-path-tracing-and-multiple-importance-sampling-part-1/">https://adventuresinrendering.wordpress.com/2014/01/21/bidirectional-path-tracing-and-multiple-importance-sampling-part-1/</a> and <a href="https://adventuresinrendering.wordpress.com/2014/01/22/bidirectional-path-tracing-and-multiple-importance-sampling-part-2/">https://adventuresinrendering.wordpress.com/2014/01/22/bidirectional-path-tracing-and-multiple-importance-sampling-part-2/</a>
-</li>
+<a href="https://adventuresinrendering.wordpress.com/2014/01/21/bidirectional-path-tracing-and-multiple-importance-sampling-part-1/">https://adventuresinrendering.wordpress.com/2014/01/21/bidirectional-path-tracing-and-multiple-importance-sampling-part-1/</a> </li>
+<li><a href="https://adventuresinrendering.wordpress.com/2014/01/22/bidirectional-path-tracing-and-multiple-importance-sampling-part-2/">https://adventuresinrendering.wordpress.com/2014/01/22/bidirectional-path-tracing-and-multiple-importance-sampling-part-2/</a></li>
+<li><a href="http://celarek.at/2014/06/global-illumination-rendering-using-path-tracing-and-bidirectional-path-tracing/">http://celarek.at/2014/06/global-illumination-rendering-using-path-tracing-and-bidirectional-path-tracing/</a></li>
 </ul>
         </section>
 
