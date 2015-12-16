@@ -75,6 +75,14 @@ Source: <a href="https://adventuresinrendering.wordpress.com/">https://adventure
 <p>The result of this project is a fairly successful bidirectional pathtracer. This pathtracer seems to do well rendering more interesting caustic effects and results in lower variance for many scenes. Its shortcomings are higher render time for identical sample count (which is expected) and high variance when a scene has a lot of delta materials. This is likely due to some mistakes in calculating pdfs when the path contains deltas. More work would have to go into calculating these distributions to reduce variance when a scene has lots of mirrors or glass. However, the implementation does give a lot of nice results.</p>
 
 <h2>
+<a id="build-instructions" class="anchor" href="#build-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build instructions</h2>
+
+<p>Building is same as assignment 3 code. Just go to the directory, and:
+<code>mkdir build ; cd build ; cmake .. ; make</code><br>
+The command line arguments are also the same for the bidirectional pathtracer as the assignment 3 code. For quick and decent results, I recommend something like:
+<code>./pathtracer -t4 -s16 -l1 -m16 ../dae/sky/CBgems.dae</code></p>
+
+<h2>
 <a id="result-images" class="anchor" href="#result-images" aria-hidden="true"><span class="octicon octicon-link"></span></a>Result images</h2>
 
 <p><img src="https://cloud.githubusercontent.com/assets/7096456/11853754/d7695b20-a40d-11e5-989f-5299fd82b143.png" alt=""><br>
@@ -118,9 +126,6 @@ Standard Pathtracing Caustics  </p>
 </ul>
 
 <p>Based on these issues, I believe the best use for my implementation of the bidirectional pathtracer would be to render caustics. Maybe combine this with some other method that works better for delta materials to make it better. I think the issue is mainly with how the probabilities were calculated when delta materials were in the path.   </p>
-
-<h1>
-<a id="build-instructions" class="anchor" href="#build-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Build Instructions</h1>
 
 <h1>
 <a id="references" class="anchor" href="#references" aria-hidden="true"><span class="octicon octicon-link"></span></a>References</h1>
