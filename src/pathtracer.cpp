@@ -398,16 +398,13 @@ namespace CMU462 {
     }
   }
 
-  Spectrum PathTracer::trace_ray(const Ray &r, int bounce, bool includeLe) {
+  Spectrum PathTracer::trace_camera_ray(const Ray &r, const struct LightPath& p, int bounce, bool includeLe) {
 
     Intersection isect;
 
     if (!bvh->intersect(r, &isect)) {  
     
       if (!this->envLight) return Spectrum(0,0,0);
-
-      float pdf, dist;
-      Vector3D dir;
 
       Spectrum light = this->envLight->sample_dir(r);
       
@@ -473,6 +470,48 @@ namespace CMU462 {
 	}
       }
       if (num_light_samples) L_out += L_temp * scale;
+      //if (p.length || bounce) L_out = L_out * (1.f / (p.length + bounce));
+    }
+
+    // Compute bidirectional lighting by combining with path from light
+    for (int index = 0; index < p.length; index++) {
+      if (p.pdf[index] > 0) {
+	
+	Spectrum illum_bidir = p.illum[index];
+	float pdf_bidir = p.pdf[index];
+	Intersection inter_bidir = p.isect[index];
+	Ray ray_bidir = p.ray[index];
+	Vector3D hit_bidir = ray_bidir.o + ray_bidir.d * inter_bidir.t;
+	Vector3D dir_bidir = (hit_bidir - hit_p).unit();
+	
+	if (isect.bsdf->is_delta() || inter_bidir.bsdf->is_delta()) continue;
+
+	double distance = (hit_p - hit_bidir).norm() - EPS_D;
+
+	Vector3D origin = hit_p + EPS_D * dir_bidir;
+	Ray shadow = Ray(origin, dir_bidir);
+	Intersection shadow_isect;
+	shadow.max_t = distance;
+	if (!(bvh->intersect(shadow, &shadow_isect))) {
+	  Vector3D w_in = (w2o * dir_bidir).unit();
+	  double cos_theta = std::max(0.0, w_in[2]);
+	  Spectrum f_origin = isect.bsdf->f(w_out.unit(), w_in);
+	  f_origin = f_origin * cos_theta;
+
+	  Matrix3x3 o2w_bidir;
+	  make_coord_space(o2w_bidir, inter_bidir.n);
+      
+	  Matrix3x3 w2o_bidir = o2w_bidir.T();
+      
+	  Vector3D w_out_bidir = (w2o_bidir * (ray_bidir.o - hit_bidir)).unit();
+	  w_in = w2o_bidir * (-dir_bidir);
+	  cos_theta = std::max(0.0, w_in[2]);
+	  Spectrum f_target = inter_bidir.bsdf->f(w_out_bidir, w_in);
+	  f_target = f_target * cos_theta;
+	
+	  L_out += f_origin * f_target * illum_bidir * (1.f / (p.length + bounce));
+	}
+      }
     }
 
     // compute an indirect lighting estimate using pathtracing with Monte Carlo.
@@ -487,18 +526,101 @@ namespace CMU462 {
     float term_prob;
     term_prob = (1.f - clamp(light_bounce.illum(), 0, 1)) * 0.65;
 
+    if (((float)(std::rand()) / RAND_MAX) < term_prob) return L_out;
+
     wi = (o2w * wi).unit();
     Ray indirect_ray = Ray(hit_p + wi*EPS_D, wi);
-
-    if (((float)(std::rand()) / RAND_MAX) < term_prob) return L_out;
     
-    return L_out + (light_bounce * trace_ray(indirect_ray, bounce, isect.bsdf->is_delta()) 
-		    * fabs(dot(wi, hit_n))) * (1 / (pdf * (1-term_prob)));
+    return L_out + (light_bounce * trace_camera_ray(indirect_ray, p, bounce, isect.bsdf->is_delta())
+		    * fabs(dot(wi, hit_n))) * (1.f / (pdf * (1.f-term_prob)));
+  }
+
+  void PathTracer::trace_light_ray (SceneLight *light, struct LightPath& p, int bounces) {
+
+    p.illum = vector<Spectrum>(bounces);
+    p.pdf = vector<float>(bounces);
+    p.isect = vector<Intersection>(bounces);
+    p.ray = vector<Ray>(bounces);
+
+    Spectrum L_out;
+    float pdf;    
+    Ray r = light->sample_ray(L_out, pdf);
+    Spectrum light_bounce = Spectrum(1, 1, 1);
+    float term_prob = 0.f;
+
+    p.length = 0;
+
+    for (int i = 0; i < bounces; i++) {
+      p.ray[i] = r;
+
+      if (!bvh->intersect(r, &p.isect[i])) {
+	p.pdf[i] = -1;
+	return;
+      }
+
+      Vector3D hit_p = r.o + r.d * p.isect[i].t;
+      Vector3D hit_n = (p.isect[i].n).unit();
+
+      // make a coordinate system for a hit point
+      // with N aligned with the Z direction.
+      Matrix3x3 o2w;
+      make_coord_space(o2w, p.isect[i].n);
+
+      Matrix3x3 w2o = o2w.T();
+
+      // w_out points towards the source of the ray (e.g.,
+      // toward the camera if this is a primary ray)
+      Vector3D w_out = r.o - hit_p;
+      w_out.normalize();
+
+      L_out = L_out * light_bounce * fabs(dot(w_out, hit_n)) * (1.f / (pdf * (1.f-term_prob)));
+      p.illum[i] = L_out;
+      p.pdf[i] = pdf * (1.f-term_prob);
+
+      term_prob = (1.f - clamp(light_bounce.illum(), 0, 1)) * 0.65;
+
+      if (!p.isect[i].bsdf->is_delta()) {
+	double dist_camera = (camera->position() - hit_p).norm();
+	Vector3D dir_cam = (camera->position() - hit_p).unit();
+	Vector3D origin = hit_p + EPS_D * dir_cam;
+	Ray shadow = Ray(origin, dir_cam);
+	Intersection shadow_isect;
+	shadow.max_t = dist_camera;
+	if (!(bvh->intersect(shadow, &shadow_isect))) {
+	  if (dot(dir_cam, (camera->view_point() - camera->position())) < 0) {
+
+	    Spectrum L_camera = L_out;
+	    Vector3D w_in = w2o * dir_cam;
+	    L_camera = L_camera * (p.isect[i].bsdf->f((w2o * w_out).unit(), w_in));
+	    L_camera = L_camera * (1.f / (pdf * (1 - term_prob) * (p.length + 16)));
+
+	    Vector2D uv = camera->intersect_ray(shadow);
+	    size_t x = floor(uv.x * sampleBuffer.w);
+	    size_t y = floor(uv.y * sampleBuffer.h);
+	    sampleBuffer.add_pixel(L_camera, x, y);
+	  }
+	}
+      }
+
+      if (((float)(std::rand()) / RAND_MAX) < term_prob) return;
+
+      p.length++;
+
+      // Random direction to shoot ray in
+      Vector3D wi;
+      float pdf;
+      w_out = (w2o * w_out).unit();
+      light_bounce = p.isect[i].bsdf->sample_f(w_out, &wi, &pdf);
+
+      wi = (o2w * wi).unit();
+      r = Ray(hit_p + wi*EPS_D, wi);
+    }
+    
+    p.length--;
   }
 
   Spectrum PathTracer::raytrace_pixel(size_t x, size_t y) {
 
-    // TODO:
     // Sample the pixel with coordinate (x,y) and return the result spectrum.
     // The sample rate is given by the number of camera rays per pixel.
 
@@ -506,23 +628,24 @@ namespace CMU462 {
 
     Vector2D p = Vector2D();
 
-    if (num_samples == 1) {
-      p.x = ((double)x+0.5) / (double)sampleBuffer.w;
-      p.y = ((double)y+0.5) / (double)sampleBuffer.h;
-      return trace_ray(camera->generate_ray(p.x, p.y), 0, true);
-    } else {
-      Spectrum result = Spectrum(0,0,0);
-      for (int i = 0; i < num_samples; i++) {
-	Vector2D e = this->gridSampler->get_sample();
-	p.x = ((double)x+e.x) / (double)sampleBuffer.w;
-	p.y = ((double)y+e.y) / (double)sampleBuffer.h;
-	result += trace_ray(camera->generate_ray(p.x, p.y), 0, true);
+    Spectrum result = Spectrum(0,0,0);
+    for (int i = 0; i < num_samples; i++) {
+      Vector2D e = this->gridSampler->get_sample();
+      p.x = ((double)x+e.x) / (double)sampleBuffer.w;
+      p.y = ((double)y+e.y) / (double)sampleBuffer.h;
+      
+      Ray r = camera->generate_ray(p.x, p.y);      
+      for (SceneLight* light : scene->lights) {
+	struct LightPath path;
+	trace_light_ray(light, path, max_ray_depth);
+	
+	result += trace_camera_ray(r, path, 0, true);
       }
-      result = result * (1 / (double)num_samples);
-      return result;
     }
+    result = result * (1 / (double)num_samples);
+    return result;
   }
-
+  
   void PathTracer::raytrace_tile(int tile_x, int tile_y,
 				 int tile_w, int tile_h) {
 
@@ -543,12 +666,12 @@ namespace CMU462 {
       if (!continueRaytracing) return;
       for (size_t x = tile_start_x; x < tile_end_x; x++) {
         Spectrum s = raytrace_pixel(x, y);
-        sampleBuffer.update_pixel(s, x, y);
+        sampleBuffer.update_pixel(s, x, y, 0.8);
       }
     }
 
     tile_samples[tile_idx_x + tile_idx_y * num_tiles_w] += 1;
-    sampleBuffer.toColor(frameBuffer, tile_start_x, tile_start_y, tile_end_x, tile_end_y);
+    sampleBuffer.toColor(frameBuffer, 0, 0, w, h);
   }
 
   void PathTracer::worker_thread() {

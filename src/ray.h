@@ -21,6 +21,15 @@ struct Ray {
   Vector3D inv_d;  ///< component wise inverse
   int sign[3];     ///< fast ray-bbox intersection
 
+  Ray() {
+    inv_d = Vector3D();
+    sign[0] = 0;
+    sign[1] = 0;
+    sign[2] = 0;
+    o = Vector3D();
+    d = Vector3D();
+  }
+
   /**
    * Constructor.
    * Create a ray instance with given origin and direction.

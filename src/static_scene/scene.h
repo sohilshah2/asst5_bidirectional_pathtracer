@@ -36,6 +36,7 @@ class SceneLight {
  public:
   virtual Spectrum sample_L(const Vector3D& p, Vector3D* wi,
                             float* distToLight, float* pdf) const = 0;
+  virtual Ray sample_ray(Spectrum& L_out, float& pdf) const = 0;
   virtual bool is_delta_light() const = 0;
 
 };

@@ -12,125 +12,133 @@
 
 namespace CMU462 { namespace StaticScene {
 
-// Directional Light //
+    // Directional Light //
 
-class DirectionalLight : public SceneLight {
- public:
-  DirectionalLight(const Spectrum& rad, const Vector3D& lightDir);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return true; }
+    class DirectionalLight : public SceneLight {
+    public:
+      DirectionalLight(const Spectrum& rad, const Vector3D& lightDir);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return true; }
 
- private:
-  Spectrum radiance;
-  Vector3D dirToLight;
+    private:
+      Spectrum radiance;
+      Vector3D dirToLight;
 
-}; // class Directional Light
+    }; // class Directional Light
 
-// Infinite Hemisphere Light //
+    // Infinite Hemisphere Light //
 
-class InfiniteHemisphereLight : public SceneLight {
- public:
-  InfiniteHemisphereLight(const Spectrum& rad);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return false; }
+    class InfiniteHemisphereLight : public SceneLight {
+    public:
+      InfiniteHemisphereLight(const Spectrum& rad);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return false; }
 
- private:
-  Spectrum radiance;
-  Matrix3x3 sampleToWorld;
-  UniformHemisphereSampler3D sampler;
+    private:
+      Spectrum radiance;
+      Matrix3x3 sampleToWorld;
+      UniformHemisphereSampler3D sampler;
 
-}; // class InfiniteHemisphereLight
+    }; // class InfiniteHemisphereLight
 
 
-// Point Light //
+    // Point Light //
 
-class PointLight : public SceneLight {
- public: 
-  PointLight(const Spectrum& rad, const Vector3D& pos);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return true; }
+    class PointLight : public SceneLight {
+    public: 
+      PointLight(const Spectrum& rad, const Vector3D& pos);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return true; }
 
- private:
-  Spectrum radiance;
-  Vector3D position;
+    private:
+      Spectrum radiance;
+      Vector3D position;
   
-}; // class PointLight
+    }; // class PointLight
 
-// Spot Light //
+    // Spot Light //
 
-class SpotLight : public SceneLight {
- public:
-  SpotLight(const Spectrum& rad, const Vector3D& pos, 
-            const Vector3D& dir, float angle);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return true; }
+    class SpotLight : public SceneLight {
+    public:
+      SpotLight(const Spectrum& rad, const Vector3D& pos, 
+		const Vector3D& dir, float angle);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return true; }
 
- private:
-  Spectrum radiance;
-  Vector3D position;
-  Vector3D direction;
-  float angle;
+    private:
+      Spectrum radiance;
+      Vector3D position;
+      Vector3D direction;
+      float angle;
 
-}; // class SpotLight
+    }; // class SpotLight
 
-// Area Light //
+    // Area Light //
 
-class AreaLight : public SceneLight {
- public:
-  AreaLight(const Spectrum& rad, 
-            const Vector3D& pos,   const Vector3D& dir, 
-            const Vector3D& dim_x, const Vector3D& dim_y);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return false; }
+    class AreaLight : public SceneLight {
+    public:
+      AreaLight(const Spectrum& rad, 
+		const Vector3D& pos,   const Vector3D& dir, 
+		const Vector3D& dim_x, const Vector3D& dim_y);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return false; }
 
- private:
-  Spectrum radiance;
-  Vector3D position;
-  Vector3D direction;
-  Vector3D dim_x;
-  Vector3D dim_y;
-  UniformGridSampler2D sampler;
-  float area;
+    private:
+      Spectrum radiance;
+      Vector3D position;
+      Vector3D direction;
+      Vector3D dim_x;
+      Vector3D dim_y;
+      UniformGridSampler2D sampler;
+      UniformHemisphereSampler3D sampler_hemi;
+      float area;
 
-}; // class AreaLight
+    }; // class AreaLight
 
-// Sphere Light //
+    // Sphere Light //
 
-class SphereLight : public SceneLight {
- public:
-  SphereLight(const Spectrum& rad, const SphereObject* sphere);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return false; }
+    class SphereLight : public SceneLight {
+    public:
+      SphereLight(const Spectrum& rad, const SphereObject* sphere);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return false; }
 
- private:
-  const SphereObject* sphere;
-  Spectrum radiance;
-  UniformHemisphereSampler3D sampler;
+    private:
+      const SphereObject* sphere;
+      Spectrum radiance;
+      UniformHemisphereSampler3D sampler;
 
-}; // class SphereLight
+    }; // class SphereLight
 
-// Mesh Light
+    // Mesh Light
 
-class MeshLight : public SceneLight {
- public:
-  MeshLight(const Spectrum& rad, const Mesh* mesh);
-  Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
-                    float* pdf) const;
-  bool is_delta_light() const { return false; }
+    class MeshLight : public SceneLight {
+    public:
+      MeshLight(const Spectrum& rad, const Mesh* mesh);
+      Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
+			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
+      bool is_delta_light() const { return false; }
 
- private:
-  const Mesh* mesh;
-  Spectrum radiance;
+    private:
+      const Mesh* mesh;
+      Spectrum radiance;
 
-}; // class MeshLight
+    }; // class MeshLight
 
-} // namespace StaticScene
+  } // namespace StaticScene
 } // namespace CMU462
 
 #endif  // CMU462_STATICSCENE_BSDF_H

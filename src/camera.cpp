@@ -2,6 +2,7 @@
 
 #include "CMU462/misc.h"
 #include "CMU462/vector3D.h"
+#include "CMU462/vector2D.h"
 
 using std::cout;
 using std::endl;
@@ -110,7 +111,6 @@ namespace CMU462 {
   }
 
   Ray Camera::generate_ray(double x, double y) const {
-    // TODO:
     // compute position of the input sensor sample coordinate on the
     // canonical sensor plane one unit away from the pinhole.
 
@@ -135,6 +135,24 @@ namespace CMU462 {
     Ray r = Ray(origin, direction);
 
     return r;
+  }
+
+  Vector2D Camera::intersect_ray(const Ray &r) const {
+    Vector3D dir = r.d;
+
+    Matrix3x3 w2c = this->c2w.T();
+
+    dir = (w2c * dir).unit();
+    
+    dir = dir * (1.f / dir.z);
+
+    dir.x = -dir.x / (tan(radians(this->hFov)/2.f) * 2.f);
+    dir.y = -dir.y / (tan(radians(this->vFov)/2.f) * 2.f);
+
+    dir.x += 0.5;
+    dir.y += 0.5;
+
+    return Vector2D(clamp(dir.x, 0.d, 1.d), clamp(dir.y, 0.d, 1.d));
   }
 
 } // namespace CMU462

@@ -30,6 +30,7 @@ namespace CMU462 { namespace StaticScene {
        */
       Spectrum sample_L(const Vector3D& p, Vector3D* wi, float* distToLight,
 			float* pdf) const;
+      Ray sample_ray(Spectrum& L_out, float& pdf) const;
       bool is_delta_light() const { return false; }
       /**
        * Returns the color found on the environment map by travelling in a specific

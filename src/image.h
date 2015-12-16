@@ -90,7 +90,7 @@ struct HDRImageBuffer {
    * \param w width of the image
    * \param h height of the image
    */
-  HDRImageBuffer(size_t w, size_t h) : w(w), h(h) { data.resize(w * h); }
+  HDRImageBuffer(size_t w, size_t h) : w(w), h(h) { data.resize(w * h); samples.resize(w * h); }
 
   /**
    * Resize the image buffer.
@@ -101,6 +101,7 @@ struct HDRImageBuffer {
     this->w = w;
     this->h = h;
     data.resize(w * h);
+    samples.resize(w * h);
     clear();
   }
 
@@ -129,6 +130,11 @@ struct HDRImageBuffer {
     // assert(0 <= x && x < w);
     // assert(0 <= y && y < h);
     data[x + y * w] = s * r + (1 - r) * data[x + y * w];
+  }
+
+  void add_pixel(const Spectrum& s, size_t x, size_t y) {
+    data[x + y * w] = (data[x + y * w]*samples[x + y * w] + s) * (1.d / (double)(samples[x + y * w] + 1));
+    samples[x + y * w]++;
   }
 
   /**
@@ -196,11 +202,12 @@ struct HDRImageBuffer {
   /**
    * Clear image buffer.
    */
-  void clear() { memset(&data[0], 0, w * h * sizeof(Spectrum)); }
+  void clear() { memset(&data[0], 0, w * h * sizeof(Spectrum)); memset(&samples[0], 0, w * h * sizeof(int));}
 
   size_t w; ///< width
   size_t h; ///< height
   std::vector<Spectrum> data; ///< pixel buffer
+  std::vector<int> samples; //Samples per pixel we've accumulated
 
 }; // class HDRImageBuffer
 

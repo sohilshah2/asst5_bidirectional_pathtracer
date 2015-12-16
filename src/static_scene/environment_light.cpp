@@ -88,6 +88,11 @@ namespace CMU462 { namespace StaticScene {
       return sample_dir(Ray(p, (*wi).unit()));
     }
 
+    Ray EnvironmentLight::sample_ray(Spectrum& L_out, float& pdf) const {
+      return Ray();
+    }
+
+
     Spectrum EnvironmentLight::sample_dir(const Ray& r) const {
 
       double theta = acos(r.d.y);
